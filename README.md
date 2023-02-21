@@ -18,3 +18,15 @@ The places data is a subset of the "proper names" file [here](https://github.com
 In this repo, find a copy retrieved in February 2023 at `./sources/stepbible/properNames.tsv`
 
 A README file in that folder will have more details.
+
+
+# Tables
+
+Each table and perhaps its related tables are in the sub-folders of the "tables" folder. Each folder will have:
+
+- A README with processing details
+- Code to do any transformations needed against raw or existing data
+- Table data in CSV format which is ready for importing
+
+
+

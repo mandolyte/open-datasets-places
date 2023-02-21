@@ -25,29 +25,34 @@ is "- Named"
 
 func main() {
 	input := flag.String("i", "", "Input CSV filename")
-	output := flag.String("o", "", "Output CSV filename")
 	flag.Parse()
 
 	// open output file for main place table
 	var w *csv.Writer
-	if *output == "" {
-		usage("Missing output filename")
-	} else {
-		fo, foerr := os.Create(*output)
-		if foerr != nil {
-			log.Fatal("os.Create() Error for main place file:" + foerr.Error())
-		}
-		defer fo.Close()
-		w = csv.NewWriter(fo)
-	}
-	// open output file for significance table
-	var s *csv.Writer
-	fo, foerr := os.Create(strings.TrimSuffix(*output, ".csv") + "_significance.csv")
+	fo, foerr := os.Create("sb_places_tbl.csv")
 	if foerr != nil {
-		log.Fatal("os.Create() Error for significance file:" + foerr.Error())
+		log.Fatal("os.Create() Error for main place file:" + foerr.Error())
 	}
 	defer fo.Close()
-	s = csv.NewWriter(fo)
+	w = csv.NewWriter(fo)
+
+	// open output file for significance table
+	var s *csv.Writer
+	sfo, sfoerr := os.Create("sbp_significance_tbl.csv")
+	if sfoerr != nil {
+		log.Fatal("os.Create() Error for significance file:" + sfoerr.Error())
+	}
+	defer sfo.Close()
+	s = csv.NewWriter(sfo)
+
+	// open output file for the sbps_has_bcv_rel table
+	var sb *csv.Writer
+	sbfo, sbfoerr := os.Create("sbps_has_bcv_rel.csv")
+	if sbfoerr != nil {
+		log.Fatal("os.Create() Error for significance file:" + sbfoerr.Error())
+	}
+	defer sbfo.Close()
+	sb = csv.NewWriter(sbfo)
 
 	// open input file
 	var r *csv.Reader
@@ -76,33 +81,41 @@ func main() {
 	//	UniqueName=uStrong	OpenBible name=Near	Founder	People living there	GoogleMap URL	Palopenmaps URL	>Geographical area
 
 	headers := []string{
-		"UniqueName",
-		"Strongs",
-		"OpenBible",
-		"Founder",
-		"PeopleGroup",
-		"GoogleMapURL",
-		"PalopenmapsURL",
+		"unique_name",
+		"strongs",
+		"founder",
+		"people_group",
+		"location",
+		"bcv_id",
 	}
 
 	sheaders := []string{
-		"UniqueName",
-		"Qualifier",
-		"Significance",
-		"Strongs",
-		"EsvName",
-		"References",
+		"unique_name",
+		"qualifer",
+		"significance",
+		"estrong",
+		"dstrong",
+		"original",
+		"esv_name",
 	}
 
-	// write the header row first
-	//strings.ReplaceAll(str, " ", "")
+	sbheaders := []string{
+		"from_unique_name",
+		"to_bcv_id",
+	}
+
+	// write the header rows first
 	herr := writeRow(w, headers)
 	if herr != nil {
 		log.Fatalf("writeRow() error on header row: \n%v\n", herr)
 	}
 	serr := writeRow(s, sheaders)
 	if serr != nil {
-		log.Fatalf("writeRow() error on significance header row: \n%v\n", herr)
+		log.Fatalf("writeRow() error on significance header row: \n%v\n", serr)
+	}
+	sberr := writeRow(sb, sbheaders)
+	if sberr != nil {
+		log.Fatalf("writeRow() error on significance header row: \n%v\n", sberr)
 	}
 
 	const dataStart = 10330
@@ -122,13 +135,40 @@ func main() {
 		// fill up the row
 		// split strongs from unique name
 		x := strings.Split(records[row+1][0], "=")
+		/*
+			"unique_name",
+			"strongs",
+			"founder",
+			"people_group",
+			"location",
+			"bcv_id",
+		*/
+		unique_name := x[0]
+		log.Printf("Working on unique_name: %v", unique_name)
+		strongs := x[1]
+		founder := records[row+1][2]
+		people_group := records[row+1][3]
+		// transform the google map url to extract the long/lat
+		// example: https://www.google.com/maps/@33.545097,36.224661,14z
+		_long_lat := strings.ReplaceAll(records[row+1][4], " ", "") // remove extra spaces
+		__long_lat := strings.Split(_long_lat, "@")
+		location := "" // default if no url present
+		if len(__long_lat) > 1 {
+			___long_lat := strings.Split(__long_lat[1], ",")       // long, lat, zoom
+			location = "@" + ___long_lat[0] + "," + ___long_lat[1] // dropping the zoom
+		}
+		// first location of bcv, which is embedded in the unqiue_name
+		_bcv := strings.Split(unique_name, "@")
+		bcv_id := strings.ToLower(_bcv[1])
+
 		arow = append(arow,
-			x[0], x[1],
-			records[row+1][1],
-			records[row+1][2],
-			records[row+1][3],
-			strings.ReplaceAll(records[row+1][4], " ", ""), // data has spaces where they should not be
-			records[row+1][5])
+			unique_name,
+			strongs,
+			founder,
+			people_group,
+			location,
+			bcv_id,
+		)
 		werr := writeRow(w, arow)
 		if werr != nil {
 			log.Fatalf("writeRow() error on row %v: \n%v\n", row, werr)
@@ -141,7 +181,7 @@ func main() {
 				break
 			}
 			cella := strings.TrimSpace(records[j][0])
-			log.Printf("cella/%v/", cella)
+			// log.Printf("cella/%v/", cella)
 			if cella == placeMarker {
 				break
 			}
@@ -174,12 +214,21 @@ func main() {
 			// 	- Significance,UniqueName,dStrong«eStrong=Heb/Grk,
 			// ESV name (and KJV, NIV),STEPBible link for first,Refs
 			// Will skip the step bible link
-			uname := ""
+			// "unique_name",
+			// "qualifer",
+			// "significance",
+			// "estrong",
+			// "dstrong",
+			// "original",
+			// "esv_name",
+
+			unique_name = ""
 			qualifier := ""
 			significance := ""
-			strongs := ""
-			esvName := ""
-			refs := ""
+			dstrong := ""
+			estrong := ""
+			original := ""
+			esv_name := ""
 
 			for c, v := range records[j] {
 				if c == 0 {
@@ -191,29 +240,55 @@ func main() {
 					x := strings.Split(v, "|")
 					if len(x) > 1 {
 						qualifier = x[0]
-						uname = x[1]
+						unique_name = x[1]
 					} else {
-						uname = v
+						unique_name = v
 					}
 				}
 				if c == 2 {
-					strongs = v
+					// example: ,H0062«H0062=אָבֵל בֵּית מַעֲכָה,
+					strongsData := strings.FieldsFunc(v, func(r rune) bool {
+						return r == '«' || r == '='
+					})
+					dstrong = strongsData[0]
+					if len(strongsData) == 3 {
+						estrong = strongsData[1]
+						original = strongsData[2]
+					} else {
+						// when only one strongs number is present
+						estrong = ""
+						original = strongsData[1]
+					}
 				}
 				if c == 3 {
-					esvName = v
+					esv_name = v
 				}
 				if c == 5 {
-					refs = v
+					refs := strings.Split(v, ";")
+					for _, vref := range refs {
+						var sbrow []string
+						_vref := strings.Trim(vref, " ")
+						if _vref == "" {
+							continue
+						}
+						_vref = strings.ToLower(_vref)
+						sbrow = append(sbrow, unique_name, _vref)
+						sberr := writeRow(sb, sbrow)
+						if sberr != nil {
+							log.Fatalf("writeRow() error on unique name %v with refs %v", unique_name, v)
+						}
+					}
 				}
 			}
 			var srow []string
 			srow = append(srow,
-				uname,        // unique name
+				unique_name,  // unique name
 				qualifier,    // qualifer
 				significance, // significance
-				strongs,      // strongs
-				esvName,      // esv name
-				refs,         // refs
+				dstrong,      // disambiguated strongs
+				estrong,      // electronic strongs
+				original,     // orginal language word(s)
+				esv_name,     // esv name
 			)
 			serr := writeRow(s, srow)
 			if serr != nil {
@@ -224,6 +299,7 @@ func main() {
 	}
 	w.Flush()
 	s.Flush()
+	sb.Flush()
 }
 
 func writeRow(w *csv.Writer, cells []string) error {
