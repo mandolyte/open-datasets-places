@@ -86,7 +86,9 @@ func main() {
 		"founder",
 		"people_group",
 		"latitude",
+		"lat",
 		"longitude",
+		"long",
 		"bcv_id",
 	}
 
@@ -142,7 +144,9 @@ func main() {
 		founder := records[row+1][2]
 		people_group := records[row+1][3]
 		latitude := ""
+		lat := ""
 		longitude := ""
+		long := ""
 		// transform the google map url to extract the long/lat
 		// example: https://www.google.com/maps/@33.545097,36.224661,14z
 		_lat_long := strings.ReplaceAll(records[row+1][4], " ", "") // remove extra spaces
@@ -151,10 +155,22 @@ func main() {
 			___lat_long := strings.Split(__lat_long[1], ",") // long, lat, zoom
 			latitude = ___lat_long[0]
 			longitude = ___lat_long[1]
+
+			// now make the shortened versions to the tenths of a degree
+			latParts := strings.Split(latitude, ".")
+			longParts := strings.Split(longitude, ".")
+			if len(latParts) > 1 {
+				lat = latParts[0] + "." + latParts[1][0:1]
+			}
+			if len(longParts) > 1 {
+				long = longParts[0] + "." + longParts[1][0:1]
+			}
 		}
 		// first location of bcv, which is embedded in the unqiue_name
 		_bcv := strings.Split(unique_name, "@")
 		bcv_id := strings.ToLower(_bcv[1])
+		// data quality: replace "eze" with "ezk"
+		bcv_id = strings.Replace(bcv_id, "eze", "ezk", 1)
 
 		arow = append(arow,
 			unique_name,
@@ -162,7 +178,9 @@ func main() {
 			founder,
 			people_group,
 			latitude,
+			lat,
 			longitude,
+			long,
 			bcv_id,
 		)
 		werr := writeRow(w, arow)
