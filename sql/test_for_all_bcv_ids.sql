@@ -5,7 +5,7 @@ where to_bcv_id not in
 )
 
 /*
-Results:
+Results:  
 1. some sb data has verses with letters at the end to narrow down the 
 location within the verse.
 2. some book abbreviations are not correct.

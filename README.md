@@ -35,7 +35,7 @@ Each table and perhaps its related tables are in the sub-folders of the "tables"
 Adding regex support to SQLite3:
 https://stackoverflow.com/questions/5071601/how-do-i-use-regex-in-a-sqlite-query
 
-# Appendix B - Data Improvements
+# Appendix B - To Do
 
 ## Simplification
 

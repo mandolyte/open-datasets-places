@@ -14,3 +14,5 @@ on twl.unique_name = sb.unique_name
 inner join pleiades_shortened_latlong_vw pl 
 on sb.lat = pl.lat and sb.long = pl.long
 ;
+
+
