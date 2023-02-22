@@ -6,7 +6,7 @@ go run versificationToCSV.go
 
 echo "Run the database imports"
 echo NOTE!! cannot indent the sql commands
-sqlite3 ../../properNames.db <<EoF
+sqlite3 ../../places.db <<EoF
 .echo on
 drop table if exists bcv_tbl;
 

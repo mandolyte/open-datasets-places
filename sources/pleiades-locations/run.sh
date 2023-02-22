@@ -6,7 +6,7 @@ splitcsv -c 1,6,7,8,12,13,15,16,17,19,22 \
 
 echo "Run the database imports"
 echo NOTE!! cannot indent the sql commands
-sqlite3 ../../properNames.db <<EoF
+sqlite3 ../../places.db <<EoF
 .echo on
 drop table if exists pleiades_tbl;
 

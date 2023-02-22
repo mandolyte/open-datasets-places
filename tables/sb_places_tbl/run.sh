@@ -10,7 +10,7 @@ go run extractPlaces.go \
 
 echo "Run the database imports"
 NOTE!! cannot indent the sql commands
-sqlite3 ../../properNames.db <<EoF
+sqlite3 ../../places.db <<EoF
 .echo on
 drop table if exists sb_places_tbl;
 drop table if exists sbp_significance_tbl;
