@@ -104,8 +104,8 @@ func main() {
 	}
 
 	sbheaders := []string{
-		"from_unique_name",
-		"to_bcv_id",
+		"unique_name",
+		"bcv_id",
 	}
 
 	// write the header rows first
@@ -165,6 +165,18 @@ func main() {
 			}
 			if len(longParts) > 1 {
 				long = longParts[0] + "." + longParts[1][0:1]
+			}
+			if lat == "0" {
+				lat = ""
+			}
+			if long == "14z" {
+				long = ""
+			}
+			if latitude == "0" {
+				latitude = ""
+			}
+			if longitude == "14z" {
+				longitude = ""
 			}
 		}
 		// first location of bcv, which is embedded in the unqiue_name
