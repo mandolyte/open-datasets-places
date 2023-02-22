@@ -30,3 +30,24 @@ Each table and perhaps its related tables are in the sub-folders of the "tables"
 
 
 
+# Appendix A - Regexp support in SQLite3
+
+Adding regex support to SQLite3:
+https://stackoverflow.com/questions/5071601/how-do-i-use-regex-in-a-sqlite-query
+
+# Appendix B - Data Improvements
+
+## Simplification
+
+Some relationship tables are not needed. In particular, `sbps_has_bcv_rel`. 
+See issue [here](https://github.com/mandolyte/open-datasets-places/issues/1).
+
+## Latitude and Longitude
+
+Lots of datasets have these - but reasonably differ in the number decimal digits included. So this idea is to do the following:
+
+- Include a new column for each that is trucated (not rounded) to tenths place. In looking at the data this seems to work pretty well. Also make this new column a REAL data type!
+- This means that the two views which currently have these shortened forms are not needed.
+
+
+
