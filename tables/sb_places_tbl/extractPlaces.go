@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -171,6 +172,11 @@ func main() {
 		bcv_id := strings.ToLower(_bcv[1])
 		// data quality: replace "eze" with "ezk"
 		bcv_id = strings.Replace(bcv_id, "eze", "ezk", 1)
+		var verseSuffix = regexp.MustCompile(`[a-zA-Z]$`)
+		if verseSuffix.MatchString(bcv_id) {
+			// remove it
+			bcv_id = bcv_id[:len(bcv_id)-1]
+		}
 
 		arow = append(arow,
 			unique_name,
@@ -286,6 +292,11 @@ func main() {
 							continue
 						}
 						_vref = strings.ToLower(_vref)
+						if verseSuffix.MatchString(_vref) {
+							// remove it
+							_vref = _vref[:len(_vref)-1]
+						}
+
 						sbrow = append(sbrow, unique_name, _vref)
 						sberr := writeRow(sb, sbrow)
 						if sberr != nil {
