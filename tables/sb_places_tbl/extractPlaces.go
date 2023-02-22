@@ -85,7 +85,8 @@ func main() {
 		"strongs",
 		"founder",
 		"people_group",
-		"location",
+		"latitude",
+		"longitude",
 		"bcv_id",
 	}
 
@@ -135,27 +136,21 @@ func main() {
 		// fill up the row
 		// split strongs from unique name
 		x := strings.Split(records[row+1][0], "=")
-		/*
-			"unique_name",
-			"strongs",
-			"founder",
-			"people_group",
-			"location",
-			"bcv_id",
-		*/
 		unique_name := x[0]
 		log.Printf("Working on unique_name: %v", unique_name)
 		strongs := x[1]
 		founder := records[row+1][2]
 		people_group := records[row+1][3]
+		latitude := ""
+		longitude := ""
 		// transform the google map url to extract the long/lat
 		// example: https://www.google.com/maps/@33.545097,36.224661,14z
-		_long_lat := strings.ReplaceAll(records[row+1][4], " ", "") // remove extra spaces
-		__long_lat := strings.Split(_long_lat, "@")
-		location := "" // default if no url present
-		if len(__long_lat) > 1 {
-			___long_lat := strings.Split(__long_lat[1], ",")       // long, lat, zoom
-			location = "@" + ___long_lat[0] + "," + ___long_lat[1] // dropping the zoom
+		_lat_long := strings.ReplaceAll(records[row+1][4], " ", "") // remove extra spaces
+		__lat_long := strings.Split(_lat_long, "@")
+		if len(__lat_long) > 1 {
+			___lat_long := strings.Split(__lat_long[1], ",") // long, lat, zoom
+			latitude = ___lat_long[0]
+			longitude = ___lat_long[1]
 		}
 		// first location of bcv, which is embedded in the unqiue_name
 		_bcv := strings.Split(unique_name, "@")
@@ -166,7 +161,8 @@ func main() {
 			strongs,
 			founder,
 			people_group,
-			location,
+			latitude,
+			longitude,
 			bcv_id,
 		)
 		werr := writeRow(w, arow)
