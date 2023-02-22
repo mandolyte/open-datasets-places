@@ -49,5 +49,4 @@ Lots of datasets have these - but reasonably differ in the number decimal digits
 - Include a new column for each that is trucated (not rounded) to tenths place. In looking at the data this seems to work pretty well. Also make this new column a REAL data type!
 - This means that the two views which currently have these shortened forms are not needed.
 
-
-
+See issue [here](https://github.com/mandolyte/open-datasets-places/issues/2)
