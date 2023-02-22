@@ -296,6 +296,7 @@ func main() {
 							// remove it
 							_vref = _vref[:len(_vref)-1]
 						}
+						_vref = strings.Replace(_vref, "eze", "ezk", 1)
 
 						sbrow = append(sbrow, unique_name, _vref)
 						sberr := writeRow(sb, sbrow)
