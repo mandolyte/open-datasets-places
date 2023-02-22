@@ -1,20 +1,9 @@
 #!/bin/sh
 
+# for below:
+# https://pkg.go.dev/github.com/mandolyte/csv-utils@v0.0.0-20190221222755-b49f9e2184bd/splitcsv
 splitcsv -c 1,6,7,8,12,13,15,16,17,19,22 \
     -i pleiades-locations.csv \
-    -o pleiades_tbl.csv
+    -o pleiades.csv
 
-echo "Run the database imports"
-echo NOTE!! cannot indent the sql commands
-sqlite3 ../../places.db <<EoF
-.echo on
-drop table if exists pleiades_tbl;
-
-.mode csv
-
-.import pleiades_tbl.csv pleiades_tbl
-select count(*) from pleiades_tbl;
-
-.exit
-EoF
 
