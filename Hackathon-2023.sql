@@ -43,6 +43,9 @@ where p.lat = "33.0" and p.long = "35.1"
 /*
 -- Link to Pleiades Website Article
 https://pleiades.stoa.org/places/845754667
+-- link to the json for the page
+https://pleiades.stoa.org/places/845754667/json
+
 */
 
 
@@ -51,27 +54,103 @@ https://pleiades.stoa.org/places/845754667
     Open Bible Geocoding Dataset
     - has linkages to Wikidata, Pleiades, and StepBible!
 */
--- from their "ancient" data
-select * from geocoding_tbl limit 10
-;
+-- the raw data
+select * from geocoding_json_tbl limit 5;
 
--- using the JSON functions
+-- using JSON functions to extract data of interest
 select 
     json_extract(linked_data, '$.s3b25cf.id')       as stepbible_id,
     json_extract(linked_data, '$.s7cc8b2.id')       as wikidata_id,
     json_extract(linked_data, '$.s2428ed.id')       as pleiades_id, 
     json_extract(linked_data, '$.s2428ed.data_url') as pleiades_url
-from geocoding_tbl
+from geocoding_json_tbl
 where pleiades_id is not null
 limit 5
 ;
-/*
--- wikidata
-https://www.wikidata.org/wiki/Q204772
 
--- pleiades
-https://pleiades.stoa.org/places/981502
--- In JSON
-https://pleiades.stoa.org/places/981502/json
+-- from their "ancient" data
+select * from geocoding_tbl 
+where pleiades_id is not null
+limit 10
+;
+
+-- let's find our friend Achzib
+select * from geocoding_tbl 
+where friendly_id like 'Achzib%'
+;
+/*
+-- go to geocoding website
+https://www.openbible.info/geo/ancient/ad0d82f/achzib-2
+
+-- wikidata
+https://www.wikidata.org/wiki/Q54991090
 */ 
+
+-- now join to Step Bible data to get all scripture references
+select g.id, g.friendly_id, g.wikidata_id, sb.unique_name, s.bcv_id, 
+    sb.estrong, sb.dstrong, sb.original, sb.esv_name,
+    sp.latitude, sp.longitude
+from geocoding_tbl g
+inner join sbps_has_bcv_rel s 
+on s.unique_name = g.stepbible_id
+inner join sbp_significance_tbl sb
+on g.stepbible_id = sb.unique_name
+inner join sb_places_tbl sp
+on sb.unique_name = sp.unique_name
+where friendly_id like 'Achzib%'
+;
+
+
+-- now convert to json array (missing outer []
+select
+json_object(
+    'id',g.id,
+    'friendly_id',g.friendly_id,
+    'wikidata_id',g.wikidata_id,
+    'stepbible_id',sb.unique_name,
+    'stepbible_ref',s.bcv_id, 
+    'estrong',sb.estrong,
+    'dstrong',sb.dstrong,
+    'original',sb.original,
+    'esv_plus',sb.esv_name,
+    'latitude',sp.latitude,
+    'longitude',sp.longitude   
+) 
+from geocoding_tbl g
+inner join sbps_has_bcv_rel s 
+on s.unique_name = g.stepbible_id
+inner join sbp_significance_tbl sb
+on g.stepbible_id = sb.unique_name
+inner join sb_places_tbl sp
+on sb.unique_name = sp.unique_name
+where friendly_id like 'Achzib%'
+;
+
+-- how about a JSON Lines format?
+select json_array('id','friendly_id','wikidata_id','unique_name','bcv_id',
+'estrong','dstrong','original','esv_name','latitude','longitude') as data
+union all
+select 
+json_array(
+    g.id,
+    g.friendly_id,
+    g.wikidata_id,
+    sb.unique_name,
+    s.bcv_id, 
+    sb.estrong,
+    sb.dstrong,
+    sb.original,
+    sb.esv_name,
+    sp.latitude,
+    sp.longitude   
+)   
+from geocoding_tbl g
+inner join sbps_has_bcv_rel s 
+on s.unique_name = g.stepbible_id
+inner join sbp_significance_tbl sb
+on g.stepbible_id = sb.unique_name
+inner join sb_places_tbl sp
+on sb.unique_name = sp.unique_name
+where friendly_id like 'Achzib%'
+;
 
