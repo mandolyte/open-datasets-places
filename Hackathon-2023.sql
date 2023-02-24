@@ -28,8 +28,12 @@ https://git.door43.org/unfoldingWord/en_tw/raw/branch/master/bible/names/tyre.md
 -- Lookup the text online
 https://www.esv.org/jos.19.29
 https://www.stepbible.org/?q=version=KJV|reference=jos.19.29;
-*/
 
+*/
+-- read the article for the city of Tyre
+select file from tw_tbl
+where category = 'names' and name = 'tyre'
+;
 
 
 /* Demo 2
