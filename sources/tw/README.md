@@ -13,3 +13,7 @@ For example:
 cd bible/kt
 sh ../../load.sh kt > ../../kt.sql
 ```
+
+This work is automated in the `run.sh` script. 
+It will create a single file of SQL insert statements to 
+load the data.

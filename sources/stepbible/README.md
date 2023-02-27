@@ -12,3 +12,8 @@ To convert:
 $ go run convertToCsv.go -i properNames.tsv -o properNames.csv
 ```
 
+The conversion to CSV was just to make sure that the TSV
+was parseable. It has no other purpose.
+
+The processing for extracting the place data from this dataset
+is found in the `tables/sb_places_tbl` folder.
